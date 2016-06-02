@@ -1,29 +1,15 @@
-import path from 'path';
 import gulp from 'gulp';
 import livereload from 'gulp-livereload';
-import webpack from 'webpack';
-import Promise from 'bluebird';
+import webpack from 'gulp-webpack';
+import webpackConfig from './webpack.config';
 
-gulp.task('webpack', () => Promise.promisify(webpack)({
-  entry: {
-    background: './app/scripts/background',
-    popup: './app/scripts/popup',
-  },
-  output: {
-    filename: '[name].js',
-    path: path.join(__dirname, 'dist/scripts'),
-  },
-  devtool: 'source-map',
-  module: {
-    loaders: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel?presets[]=es2015',
-      },
-    ],
-  },
-}));
+gulp.task('webpack', () => gulp.src([
+  './app/scripts/background.js',
+  './app/scripts/popup.jsx',
+])
+  .pipe(webpack(webpackConfig))
+  .pipe(gulp.dest('dist/scripts'))
+);
 
 gulp.task('copy', () => gulp.src(['app/**/*', '!app/scripts/**/*'])
   .pipe(gulp.dest('dist'))
@@ -35,6 +21,4 @@ gulp.task('watch', ['copy', 'webpack'], () => {
   gulp.watch('app/scripts/**/*', ['webpack']);
 });
 
-gulp.task('default', [
-  'copy',
-]);
+gulp.task('default', ['copy', 'webpack']);

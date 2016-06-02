@@ -2,6 +2,7 @@
   extends: 'xo-space'
   env:
     node: true
+    browser: true
   rules:
     comma-dangle:
       - 2
@@ -9,5 +10,8 @@
     object-curly-spacing:
       - 2
       - always
+    react/jsx-uses-vars: 1
   globals:
     chrome: true
+  plugins:
+      - react
