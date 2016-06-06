@@ -10,6 +10,7 @@
     object-curly-spacing:
       - 2
       - always
+    react/jsx-uses-react: 1
     react/jsx-uses-vars: 1
   globals:
     chrome: true
