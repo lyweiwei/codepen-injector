@@ -21,7 +21,9 @@ const store = createStore(reducer, {
     pen: 'ezmXVX',
     regex: '.*',
   }],
-  // editingRule: id,
+  // editing: {
+  //   id,
+  // },
 });
 
 render(

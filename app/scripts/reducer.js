@@ -1,11 +1,31 @@
 import _ from 'underscore';
 import { uuid } from './util';
 
+function removeRule(state, id = state.editing.id) {
+  return {
+    rules: _.filter(state.rules, rule => rule.id !== id),
+  };
+}
+
+function cancelEditing(state) {
+  if (state.editing) {
+    if (state.editing.isNew) {
+      return removeRule(state);
+    }
+    return _.pick(state, 'rules');
+  }
+  return state;
+}
+
+function startEditing(state, id) {
+  return _.extend({}, cancelEditing(state), {
+    editing: { id },
+  });
+}
+
 export default (state, action) => {
   if (action.type === 'EDIT_RULE') {
-    return _.extend({}, state, {
-      editingRule: action.id,
-    });
+    return startEditing(state, action.id);
   } else if (action.type === 'COMMIT_EDITING') {
     return {
       rules: _.map(state.rules, rule => {
@@ -16,7 +36,7 @@ export default (state, action) => {
       }),
     };
   } else if (action.type === 'CANCEL_EDITING') {
-    return _.pick(state, 'rules');
+    return cancelEditing(state);
   } else if (action.type === 'ADD_RULE') {
     const id = uuid();
     return {
@@ -24,12 +44,13 @@ export default (state, action) => {
         id,
         type: 'codepen',
       }]),
-      editingRule: id,
+      editing: {
+        id,
+        isNew: true,
+      },
     };
   } else if (action.type === 'REMOVE_RULE') {
-    return {
-      rules: _.filter(state.rules, rule => rule.id !== action.id),
-    };
+    return removeRule(state);
   }
 
   return state;
