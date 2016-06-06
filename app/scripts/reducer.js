@@ -1,7 +1,17 @@
 import _ from 'underscore';
 import { uuid } from './util';
 
-function removeRule(state, id = state.editing.id) {
+function addRule(state) {
+  return {
+    rules: state.rules,
+    editing: {
+      id: uuid(),
+      type: 'codepen',
+    },
+  };
+}
+
+function removeEditing(state, id = state.editing.id) {
   return {
     rules: _.filter(state.rules, rule => rule.id !== id),
   };
@@ -9,17 +19,34 @@ function removeRule(state, id = state.editing.id) {
 
 function cancelEditing(state) {
   if (state.editing) {
-    if (state.editing.isNew) {
-      return removeRule(state);
-    }
     return _.pick(state, 'rules');
+  }
+  return state;
+}
+
+function commitEditing(state) {
+  if (state.editing) {
+    let editingNewRule = true;
+    const rules = _.map(state.rules, rule => {
+      if (rule.id === state.editing.id) {
+        editingNewRule = false;
+        return state.editing;
+      }
+      return rule;
+    });
+
+    if (editingNewRule) {
+      rules.push(state.editing);
+    }
+
+    return { rules };
   }
   return state;
 }
 
 function startEditing(state, id) {
   return _.extend({}, cancelEditing(state), {
-    editing: { id },
+    editing: _.find(state.rules, rule => rule.id === id),
   });
 }
 
@@ -27,30 +54,19 @@ export default (state, action) => {
   if (action.type === 'EDIT_RULE') {
     return startEditing(state, action.id);
   } else if (action.type === 'COMMIT_EDITING') {
-    return {
-      rules: _.map(state.rules, rule => {
-        if (rule.id === action.rule.id) {
-          return _.defaults({ id: action.id }, action.rule);
-        }
-        return rule;
-      }),
-    };
+    return commitEditing(state);
   } else if (action.type === 'CANCEL_EDITING') {
     return cancelEditing(state);
   } else if (action.type === 'ADD_RULE') {
-    const id = uuid();
-    return {
-      rules: state.rules.concat([{
-        id,
-        type: 'codepen',
-      }]),
-      editing: {
-        id,
-        isNew: true,
-      },
-    };
-  } else if (action.type === 'REMOVE_RULE') {
-    return removeRule(state);
+    return addRule(state);
+  } else if (action.type === 'REMOVE_EDITING') {
+    return removeEditing(state);
+  } else if (action.type === 'EDITOR_CHANGE') {
+    return _.extend({}, state, {
+      editing: _.extend({}, state.editing, {
+        [action.key]: action.value,
+      }),
+    });
   }
 
   return state;

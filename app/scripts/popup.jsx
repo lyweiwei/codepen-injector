@@ -1,6 +1,7 @@
+import _ from 'underscore';
 import React from 'react';
 import { render } from 'react-dom';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 
 import reducer from './reducer';
@@ -10,6 +11,15 @@ import { uuid } from './util';
 import 'bootstrap-loader';
 
 const id = uuid();
+
+const focusEditor = (/* { getState } */) => next => action => {
+  if (_.contains(['ADD_RULE', 'EDIT_RULE'], action.type)) {
+    window.setTimeout(() => {
+      window.location.href = '#editor';
+    }, 0);
+  }
+  return next(action);
+};
 
 const store = createStore(reducer, {
   rules: [{
@@ -21,10 +31,7 @@ const store = createStore(reducer, {
     pen: 'ezmXVX',
     regex: '.*',
   }],
-  // editing: {
-  //   id,
-  // },
-});
+}, applyMiddleware(focusEditor));
 
 render(
   <Provider store={store}>
@@ -32,3 +39,5 @@ render(
   </Provider>,
   document.getElementById('container')
 );
+
+store.subscribe((...args) => console.log(args));
