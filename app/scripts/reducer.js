@@ -67,6 +67,8 @@ export default (state, action) => {
         [action.key]: action.value,
       }),
     });
+  } else if (action.type === 'LOAD_RULES') {
+    return _.extend({}, state, { rules: action.rules });
   }
 
   return state;

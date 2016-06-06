@@ -9,6 +9,7 @@ export const editRule = simpleAction('EDIT_RULE', 'id');
 export const removeRule = simpleAction('REMOVE_EDITING');
 export const commitEditing = simpleAction('COMMIT_EDITING');
 export const cancelEditing = simpleAction('CANCEL_EDITING');
+export const loadRules = simpleAction('LOAD_RULES', 'rules');
 
 function editorChange(key) {
   return value => ({

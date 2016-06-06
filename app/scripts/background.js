@@ -1,28 +1,23 @@
+import Promise from 'bluebird';
 import $ from 'jquery';
 import _ from 'underscore';
+import ruleManager from './rule-manager';
 
-chrome.storage.sync.set({
-  config: [
-    { regex: '.*', pen: 'ezmXVX' },
-  ],
-}, _.noop);
+function download(url) {
+  return new Promise(resolve => $.get(url, resolve, 'text'));
+}
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
-    chrome.storage.sync.get('config', ({
-      config = [],
-    }) => _.each(config, ({
-      regex = '',
-      pen = '',
-    }) => {
+    ruleManager.fetch().each(({ user, pen, regex }) => {
       if (pen && tab.url.match(new RegExp(regex))) {
-        $.get(`http://codepen.io/wewei/pen/${pen}.js`, code => {
+        download(`http://codepen.io/${user}/pen/${pen}.js`).then(code => {
           chrome.tabs.executeScript(tabId, { code }, _.noop);
-        }, 'text');
-        $.get(`http://codepen.io/wewei/pen/${pen}.css`, code => {
+        });
+        download(`http://codepen.io/${user}/pen/${pen}.css`).then(code => {
           chrome.tabs.insertCSS(tabId, { code }, _.noop);
         });
       }
-    }));
+    });
   }
 });
